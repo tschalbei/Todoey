@@ -14,51 +14,41 @@ class CategoryViewController: UITableViewController {
     var categories = [Category]()
     
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
-    
-    
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        tableView.dataSource = self
-        tableView.delegate = self
-        
-//        print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
-        
-        tableView.reloadData()
-//        loadCategory()
 
+        loadCategories()
+        
+    }
+
+    // MARK: - Table view data source
+
+
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        // #warning Incomplete implementation, return the number of rows
+        return categories.count
     }
     
-    // Mark - TableView Datasource Methods
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-//        let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath)
-//
-//        cell.textLabel?.text = categories[indexPath.row].name
-//
-        let cell = UITableViewCell()
-        cell.textLabel?.text = "Hello"
+        let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath)
+        
+        cell.textLabel?.text = categories[indexPath.row].name
+        
         return cell
     }
 
-    override func numberOfSections(in tableView: UITableView) -> Int {
-        return 7 //categories.count
-    }
+    //MARK - Model Manipulation Methods
     
-  
-    // Mark - Data Manipulation Methods
-    
-    func loadCategory() {
+    func loadCategories() {
         
         let request : NSFetchRequest<Category> = Category.fetchRequest()
-        
         do {
             categories = try context.fetch(request)
         } catch {
             print("Error loading message: \(error)")
         }
-        print(categories)
         tableView.reloadData()
     }
     
@@ -71,13 +61,26 @@ class CategoryViewController: UITableViewController {
         tableView.reloadData()
     }
     
-    // Mark - Add New Categories
+    // MARK - TableView Delegate Methods
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        performSegue(withIdentifier: "goToItems", sender: self)
+    }
     
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        let destintionVC = segue.destination as! TodoListViewController
+        
+        if let indexPath = tableView.indexPathForSelectedRow {
+            destintionVC.selectedCategory = categories[indexPath.row]
+        }
+    }
+    
+    // MARK - Add new Categories
+
     @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
         
         var textField = UITextField()
         
-        let alert = UIAlertController(title: "Add New Category", message: "", preferredStyle: .alert)
+        let alert = UIAlertController(title: "Add New Todoey Category", message: "", preferredStyle: .alert)
         let action = UIAlertAction(title: "Add Category", style: .default) { (action) in
             
             
@@ -92,17 +95,12 @@ class CategoryViewController: UITableViewController {
         }
         
         alert.addTextField { (alertTextField) in
-            alertTextField.placeholder = "Create new category"
+            alertTextField.placeholder = "Create new Category"
             textField = alertTextField
         }
         
         alert.addAction(action)
         present(alert, animated: true, completion: nil)
-        
     }
-    
-    // Mark - TableView Delegate Methods
-    
-
     
 }
